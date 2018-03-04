@@ -1,0 +1,7 @@
+# Python binaries
+*.pyc
+
+# Vim-related files
+*~
+*.swp
+*.vim
