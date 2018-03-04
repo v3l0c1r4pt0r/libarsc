@@ -56,6 +56,9 @@ class Enum(IntEnum):
             b = bytes(reversed(b))
         return b
 
+    def __len__(self):
+        return len(bytes(self))
+
     @classmethod
     def from_bytes(cls, b, little=False):
         max_val = cls._max_value()

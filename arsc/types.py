@@ -63,3 +63,10 @@ class ResourceTypeTests(unittest.TestCase):
         actual = str(invector)
 
         self.assertEqual(expected, actual)
+
+    def test_len(self):
+        invector = ResourceType.RES_TABLE_TYPE
+        expected = 2
+        actual = len(invector)
+
+        self.assertEqual(expected, actual)
