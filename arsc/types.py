@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# resource types in ARSC file
+## \file types.py
+# \brief resource types in ARSC file
 import unittest
 from type.enum import Enum
 

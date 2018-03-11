@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
-# ResTable and related
+## \file table.py
+# \brief ResTable and related
 import unittest
 from type.uint32 import uint32
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 
+## \class ResTable_header
+# \brief Header for a resource table
+# \details Its data contains a series of
+# additional chunks:
+#   * A ResStringPool_header containing all table values.  This string pool
+#     contains all of the string values in the entire resource table (not
+#     the names of entries or type identifiers however).
+#   * One or more ResTable_package chunks.
+#
+# Specific entries within a resource table can be uniquely identified
+# with a single integer as defined by the ResTable_ref structure.
 class ResTable_header:
 
     def __init__(self, header=ResChunk_header(), packageCount=0):

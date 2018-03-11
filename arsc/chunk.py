@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-# ResChunk and related
+## \file chunk.py
+# \brief ResChunk and related
 import unittest
 from type.uint16 import uint16
 from type.uint32 import uint32
 from arsc.types import ResourceType
 
+## \class ResChunk_header
+# \brief Header that appears at the front of every data chunk in a resource.
 class ResChunk_header:
 
     ResChunk_header_len = len(ResourceType.RES_NULL_TYPE) + len(uint16(0)) + \
