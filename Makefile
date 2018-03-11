@@ -14,4 +14,7 @@ tests: type.uint16.uint16Tests
 tests: type.uint32.uint32Tests
 tests: type.uint64.uint64Tests
 
-.PHONY: tests
+doc:
+	doxygen
+
+.PHONY: tests doc
