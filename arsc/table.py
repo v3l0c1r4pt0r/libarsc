@@ -19,11 +19,14 @@ from arsc.types import ResourceType
 # with a single integer as defined by the ResTable_ref structure.
 class ResTable_header:
 
-    def __init__(self, header=ResChunk_header(), packageCount=0):
-        if isinstance(header, ResChunk_header):
-            self.header = header
-        else:
+    def __init__(self, header=ResChunk_header(ResourceType.RES_TABLE_TYPE),
+            packageCount=0):
+        if not isinstance(header, ResChunk_header):
             raise Exception('header must be of type ResChunk_header')
+        if header.type is not ResourceType.RES_TABLE_TYPE:
+            raise Exception('header must describe resource of type '\
+                    'RES_TABLE_TYPE')
+        self.header = header
 
         if isinstance(packageCount, uint32):
             self.packageCount = packageCount
@@ -62,7 +65,7 @@ class ResTable_header:
 class ResTable_headerTests(unittest.TestCase):
 
     def test_header_is_expected(self):
-        invector = ResTable_header(ResChunk_header())
+        invector = ResTable_header(ResChunk_header(ResourceType.RES_TABLE_TYPE))
         expected = ResChunk_header
         actual = type(invector.header)
 
@@ -77,15 +80,24 @@ class ResTable_headerTests(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_header_describes_wrong_type(self):
+        with self.assertRaises(Exception) as cm:
+            invector = ResTable_header(ResChunk_header())
+
+        expected = 'header must describe resource of type RES_TABLE_TYPE'
+        actual, = cm.exception.args
+
+        self.assertEqual(expected, actual)
+
     def test_packageCount_is_uint32(self):
-        invector = ResTable_header(ResChunk_header(), uint32(0x8331337))
+        invector = ResTable_header(ResChunk_header(ResourceType.RES_TABLE_TYPE), uint32(0x8331337))
         expected = uint32
         actual = type(invector.packageCount)
 
         self.assertEqual(expected, actual)
 
     def test_packageCount_is_uintable(self):
-        invector = ResTable_header(ResChunk_header(), 0x8331337)
+        invector = ResTable_header(ResChunk_header(ResourceType.RES_TABLE_TYPE), 0x8331337)
         expected = uint32
         actual = type(invector.packageCount)
 
@@ -94,7 +106,7 @@ class ResTable_headerTests(unittest.TestCase):
     @unittest.skip('Not working because of uint32 error')
     def test_packageCount_is_not_uintable(self):
         with self.assertRaises(TypeError) as cm:
-            invector = ResTable_header(ResChunk_header(), 'be elite')
+            invector = ResTable_header(ResChunk_header(ResourceType.RES_TABLE_TYPE), 'be elite')
 
         expected = 'Error'
         actual = cm.exception.message
