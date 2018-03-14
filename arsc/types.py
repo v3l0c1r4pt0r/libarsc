@@ -6,7 +6,9 @@ from type.enum import Enum
 
 class ResourceType(Enum):
     RES_NULL_TYPE = 0x0000
+    ## ResChunk_header is part of \link stringpool.ResStringPool \endlink
     RES_STRING_POOL_TYPE = 0x0001
+    ## ResChunk_header is part of \link table.ResTable_header \endlink
     RES_TABLE_TYPE = 0x0002
     RES_XML_TYPE = 0x0003
     # Chunk types in RES_XML_TYPE
@@ -21,6 +23,7 @@ class ResourceType(Enum):
     # pool back to resource identifiers.  It is optional.
     RES_XML_RESOURCE_MAP_TYPE = 0x0180
     # Chunk types in RES_TABLE_TYPE
+    ## ResChunk_header is part of \link table.ResTable_package \endlink
     RES_TABLE_PACKAGE_TYPE = 0x0200
     RES_TABLE_TYPE_TYPE = 0x0201
     RES_TABLE_TYPE_SPEC_TYPE = 0x0202
