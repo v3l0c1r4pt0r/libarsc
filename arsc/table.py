@@ -19,8 +19,12 @@ from arsc.types import ResourceType
 # with a single integer as defined by the ResTable_ref structure.
 class ResTable_header:
 
-    def __init__(self, header=ResChunk_header(ResourceType.RES_TABLE_TYPE),
-            packageCount=0):
+    len = 0x1c
+
+    def __init__(self, header=None, packageCount=0):
+        if header is None:
+            header = ResChunk_header(ResourceType.RES_TABLE_TYPE,
+                    headerSize=ResTable_header.len, size=ResTable_header.len)
         if not isinstance(header, ResChunk_header):
             raise Exception('header must be of type ResChunk_header')
         if header.type is not ResourceType.RES_TABLE_TYPE:
@@ -69,11 +73,13 @@ class ResTable_header:
 class ResTable_package:
 
     MAX_NAME_LEN = 128
+    len = 0x120
 
-    def __init__(self,
-            header=ResChunk_header(ResourceType.RES_TABLE_PACKAGE_TYPE), id=0,
-            name=b'\0\0', typeStrings=0, lastPublicType=0,
-            keyStrings=0, lastPublicKey=0):
+    def __init__(self, header=None, id=0, name=b'\0\0', typeStrings=0,
+            lastPublicType=0, keyStrings=0, lastPublicKey=0):
+        if header is None:
+            header = ResChunk_header(ResourceType.RES_TABLE_PACKAGE_TYPE,
+                    headerSize=ResTable_package.len, size=ResTable_package.len)
         if not isinstance(header, ResChunk_header):
             raise Exception('header must be of type ResChunk_header')
         if header.type is not ResourceType.RES_TABLE_PACKAGE_TYPE:
@@ -280,6 +286,15 @@ class ResTable_headerTests(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_objects_are_not_same(self):
+        invector1 = ResTable_header()
+        invector2 = ResTable_header()
+        invector1.header.size = uint32(123)
+
+        self.assertIsNot(invector1, invector2)
+        self.assertNotEqual(invector1, invector2)
+
+
 class ResTable_packageTests(unittest.TestCase):
 
     def test_header_is_invalid(self):
@@ -391,3 +406,11 @@ class ResTable_packageTests(unittest.TestCase):
         actual = ResTable_package.from_bytes(invector)
 
         self.assertEqual(expected, actual)
+
+    def test_objects_are_not_same(self):
+        invector1 = ResTable_package()
+        invector2 = ResTable_package()
+        invector1.header.size = uint32(123)
+
+        self.assertIsNot(invector1, invector2)
+        self.assertNotEqual(invector1, invector2)
