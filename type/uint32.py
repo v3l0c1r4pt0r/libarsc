@@ -35,7 +35,7 @@ class uint32:
         else:
             _endian = '>'
         integer, = struct.unpack("%sI" % _endian, b[:4])
-        return uint32(integer), b[4:]
+        return uint32(integer, little), b[4:]
 
 class uint32Tests(unittest.TestCase):
 
@@ -71,5 +71,13 @@ class uint32Tests(unittest.TestCase):
         invector = uint32(0xdeadbeef)
         expected = '3735928559'
         actual = str(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_from_bytes_passes_endianness(self):
+        invector = b'\1\0\0\0'
+        expected = invector
+        obj, b = uint32.from_bytes(invector, little=True)
+        actual = bytes(obj)
 
         self.assertEqual(expected, actual)
