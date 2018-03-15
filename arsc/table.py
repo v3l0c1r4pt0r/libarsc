@@ -3,8 +3,10 @@
 # \brief ResTable and related
 import unittest
 from type.uint32 import uint32
+from type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
+from arsc.external.configuration import AConfiguration
 
 ## \class ResTable_header
 # \brief Header for a resource table
@@ -186,6 +188,33 @@ class ResTable_package:
 
         return ResTable_package(header, id, name, typeStrings, lastPublicType,
                 keyStrings, lastPublicKey), b[4:]
+
+
+## \class ResTable_config
+class ResTable_config:
+
+    ## \enum Config
+    # \brief Flag bits for ResTable_typeSpec entries
+    class Config(Flag):
+        CONFIG_MCC = AConfiguration.ACONFIGURATION_MCC
+        CONFIG_MNC = AConfiguration.ACONFIGURATION_MCC
+        CONFIG_LOCALE = AConfiguration.ACONFIGURATION_LOCALE
+        CONFIG_TOUCHSCREEN = AConfiguration.ACONFIGURATION_TOUCHSCREEN
+        CONFIG_KEYBOARD = AConfiguration.ACONFIGURATION_KEYBOARD
+        CONFIG_KEYBOARD_HIDDEN = AConfiguration.ACONFIGURATION_KEYBOARD_HIDDEN
+        CONFIG_NAVIGATION = AConfiguration.ACONFIGURATION_NAVIGATION
+        CONFIG_ORIENTATION = AConfiguration.ACONFIGURATION_ORIENTATION
+        CONFIG_DENSITY = AConfiguration.ACONFIGURATION_DENSITY
+        CONFIG_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SCREEN_SIZE
+        CONFIG_SMALLEST_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SMALLEST_SCREEN_SIZE
+        CONFIG_VERSION = AConfiguration.ACONFIGURATION_VERSION
+        CONFIG_SCREEN_LAYOUT = AConfiguration.ACONFIGURATION_SCREEN_LAYOUT
+        CONFIG_UI_MODE = AConfiguration.ACONFIGURATION_UI_MODE
+        CONFIG_LAYOUTDIR = AConfiguration.ACONFIGURATION_LAYOUTDIR
+        CONFIG_MAX = 0xffffffff
+
+#       def from_bytes(b, little=True):
+#           return Flag.from_bytes(b, True)
 
 
 class ResTable_headerTests(unittest.TestCase):
@@ -414,3 +443,36 @@ class ResTable_packageTests(unittest.TestCase):
 
         self.assertIsNot(invector1, invector2)
         self.assertNotEqual(invector1, invector2)
+
+class ResTable_configTests(unittest.TestCase):
+
+    def test_config_to_int(self):
+        invector = ResTable_config.Config.CONFIG_MCC
+        expected = 0x1
+        actual = int(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_configs_sum_to_int(self):
+        invector = ResTable_config.Config.CONFIG_DENSITY | \
+                ResTable_config.Config.CONFIG_VERSION
+        expected = 0x500
+        actual = int(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_config_from_bytes(self):
+        invector = b'\0\5\0\0\x13\x37'
+        expected = ResTable_config.Config.CONFIG_DENSITY | \
+                ResTable_config.Config.CONFIG_VERSION, b'\x13\x37'
+        actual = ResTable_config.Config.from_bytes(invector, little=True)
+
+        self.assertEqual(expected, actual)
+
+    def test_bytes(self):
+        invector = ResTable_config.Config.CONFIG_DENSITY | \
+                ResTable_config.Config.CONFIG_VERSION
+        expected = b'\0\5\0\0'
+        actual = bytes(reversed(bytes(invector)))
+
+        self.assertEqual(expected, actual)
