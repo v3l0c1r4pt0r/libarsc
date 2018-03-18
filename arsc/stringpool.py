@@ -9,6 +9,21 @@ from arsc.types import ResourceType
 from exceptions import WrongTypeException
 
 ## \class ResStringPool_header
+#
+#  \brief Definition for a pool of strings.
+#  \details The data of this chunk is an
+#  array of uint32_t providing indices into the pool, relative to
+#  stringsStart.  At stringsStart are all of the UTF-16 strings
+#  concatenated together; each starts with a uint16_t of the string's
+#  length and each ends with a 0x0000 terminator.  If a string is >
+#  32767 characters, the high bit of the length is set meaning to take
+#  those 15 bits as a high word and it will be followed by another
+#  uint16_t containing the low word.
+#
+#  If styleCount is not zero, then immediately following the array of
+#  uint32_t indices into the string table is another array of indices
+#  into a style table starting at stylesStart.  Each entry in the
+#  style table is an array of ResStringPool_span structures.
 class ResStringPool_header:
 
     len = 28
