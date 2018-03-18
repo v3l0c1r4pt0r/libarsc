@@ -6,6 +6,7 @@ from type.uint32 import uint32
 from type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
+from exceptions import WrongTypeException
 
 ## \class ResStringPool_header
 class ResStringPool_header:
@@ -19,10 +20,10 @@ class ResStringPool_header:
                     headerSize=ResStringPool_header.len,
                     size=ResStringPool_header.len)
         if not isinstance(header, ResChunk_header):
-            raise Exception('header must be of type ResChunk_header')
+            raise WrongTypeException('header', ResChunk_header)
         if header.type is not ResourceType.RES_STRING_POOL_TYPE:
-            raise Exception('header must describe resource of type '\
-                    'RES_STRING_POOL_TYPE')
+            raise ChunkHeaderWrongTypeException(
+                    ResourceType.RES_STRING_POOL_TYPE)
         self.header = header
 
         if isinstance(stringCount, uint32):

@@ -7,6 +7,8 @@ from type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 from arsc.external.configuration import AConfiguration
+from exceptions import WrongTypeException
+from exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResTable_header
 # \brief Header for a resource table
@@ -28,10 +30,9 @@ class ResTable_header:
             header = ResChunk_header(ResourceType.RES_TABLE_TYPE,
                     headerSize=ResTable_header.len, size=ResTable_header.len)
         if not isinstance(header, ResChunk_header):
-            raise Exception('header must be of type ResChunk_header')
+            raise WrongTypeException('header', ResChunk_header)
         if header.type is not ResourceType.RES_TABLE_TYPE:
-            raise Exception('header must describe resource of type '\
-                    'RES_TABLE_TYPE')
+            raise ChunkHeaderWrongTypeException(ResourceType.RES_TABLE_TYPE)
         self.header = header
 
         if isinstance(packageCount, uint32):
@@ -83,10 +84,10 @@ class ResTable_package:
             header = ResChunk_header(ResourceType.RES_TABLE_PACKAGE_TYPE,
                     headerSize=ResTable_package.len, size=ResTable_package.len)
         if not isinstance(header, ResChunk_header):
-            raise Exception('header must be of type ResChunk_header')
+            raise WrongTypeException('header', ResChunk_header)
         if header.type is not ResourceType.RES_TABLE_PACKAGE_TYPE:
-            raise Exception('header must describe resource of type '\
-                    'RES_TABLE_PACKAGE_TYPE')
+            raise ChunkHeaderWrongTypeException(
+                    ResourceType.RES_TABLE_PACKAGE_TYPE)
         ## \link ResChunk_header \endlink instance
         # \details Identifies structure and defines its size
         self.header = header
@@ -299,7 +300,7 @@ class ResTable_headerTests(unittest.TestCase):
             invector = ResTable_header(b'\x02\x00\x0c\x00\xac\xa3\x01\x00')
 
         expected = 'header must be of type ResChunk_header'
-        actual, = cm.exception.args
+        _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)
 
@@ -308,7 +309,7 @@ class ResTable_headerTests(unittest.TestCase):
             invector = ResTable_header(ResChunk_header())
 
         expected = 'header must describe resource of type RES_TABLE_TYPE'
-        actual, = cm.exception.args
+        _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)
 
@@ -399,7 +400,7 @@ class ResTable_packageTests(unittest.TestCase):
             invector = ResTable_package('qwer')
 
         expected = 'header must be of type ResChunk_header'
-        actual, = cm.exception.args
+        _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)
 
@@ -408,7 +409,7 @@ class ResTable_packageTests(unittest.TestCase):
             invector = ResTable_package(ResChunk_header(ResourceType.RES_NULL_TYPE))
 
         expected = 'header must describe resource of type RES_TABLE_PACKAGE_TYPE'
-        actual, = cm.exception.args
+        _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)
 
