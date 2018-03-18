@@ -39,11 +39,11 @@ class ResStringPool_header:
         else:
             self.styleCount = uint32(styleCount, little=True)
 
-        if isinstance(flags, uint32):
+        if isinstance(flags, ResStringPool_header.Flags):
             ## Flags.
             self.flags = flags
         else:
-            self.flags = uint32(flags, little=True)
+            self.flags = ResStringPool_header.Flags(flags)
 
         if isinstance(stringsStart, uint32):
             ## Index from header of the string data.
@@ -71,11 +71,17 @@ class ResStringPool_header:
         return '{c}({header}, {stringCount}, {styleCount}, {flags}, ' \
                 '{stringsStart}, {styleCount})'.format(c=type(self).__name__,
                 header=repr(self.header), stringCount=self.stringCount,
-                styleCount=self.styleCount, flags=self.flags,
+                styleCount=self.styleCount, flags=str(self.flags),
                 stringsStart=self.stringsStart, stylesStart=self.stylesStart)
 
     def __eq__(self, rhs):
-        return type(self) == type(rhs) and self.header == rhs.header
+        return type(self) == type(rhs) and \
+                self.header == rhs.header and \
+                self.stringCount == rhs.stringCount and \
+                self.styleCount == rhs.styleCount and \
+                self.flags == rhs.flags and \
+                self.stringsStart == rhs.stringsStart and \
+                self.stylesStart == rhs. stylesStart
 
     def __len__(self):
         return len(bytes(self))
@@ -84,7 +90,7 @@ class ResStringPool_header:
         header = bytes(self.header)
         stringCount = bytes(self.stringCount)
         styleCount = bytes(self.styleCount)
-        flags = bytes(self.flags)
+        flags = bytes(reversed(bytes(self.flags)))
         stringsStart = bytes(self.stringsStart)
         stylesStart = bytes(self.stylesStart)
 
@@ -95,7 +101,7 @@ class ResStringPool_header:
         header, b = ResChunk_header.from_bytes(b)
         stringCount, b = uint32.from_bytes(b, little=True)
         styleCount, b = uint32.from_bytes(b, little=True)
-        flags, b = uint32.from_bytes(b, little=True)
+        flags, b = ResStringPool_header.Flags.from_bytes(b, little=True)
         stringsStart, b = uint32.from_bytes(b, little=True)
         stylesStart, b = uint32.from_bytes(b, little=True)
 
@@ -114,22 +120,23 @@ class ResStringPool_headerTests(unittest.TestCase):
 
     def test_str(self):
         invector = ResStringPool_header(ResChunk_header(
-            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0, 0x100, 0x44,
-            0)
+            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0,
+            ResStringPool_header.Flags.UTF8_FLAG, 0x44, 0)
         expected = '{header={type=ResourceType.RES_STRING_POOL_TYPE, ' \
                 'headerSize=28, size=148}, stringCount=10, styleCount=0, ' \
-                'flags=256, stringsStart=68, stylesStart=0}'
+                'flags=Flags.UTF8_FLAG, ' \
+                'stringsStart=68, stylesStart=0}'
         actual = str(invector)
 
         self.assertEqual(expected, actual)
 
     def test_repr(self):
         invector = ResStringPool_header(ResChunk_header(
-            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0, 0x100, 0x44,
-            0)
+            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0,
+            ResStringPool_header.Flags.UTF8_FLAG, 0x44, 0)
         expected = 'ResStringPool_header(ResChunk_header(' \
                 'ResourceType.RES_STRING_POOL_TYPE, 28, 148), 10, 0, ' \
-                '256, 68, 0)'
+                'Flags.UTF8_FLAG, 68, 0)'
         actual = repr(invector)
 
         self.assertEqual(expected, actual)
@@ -143,8 +150,8 @@ class ResStringPool_headerTests(unittest.TestCase):
 
     def test_bytes(self):
         invector = ResStringPool_header(ResChunk_header(
-            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0, 0x100, 0x44,
-            0)
+            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0,
+            ResStringPool_header.Flags.UTF8_FLAG, 0x44, 0)
         expected = b'\1\0\x1c\0\x94\0\0\0' + \
         b'\x0a\0\0\0\0\0\0\0\0\1\0\0\x44\0\0\0\0\0\0\0'
         actual = bytes(invector)
@@ -156,8 +163,8 @@ class ResStringPool_headerTests(unittest.TestCase):
         b'\x0a\0\0\0\0\0\0\0\0\1\0\0\x44\0\0\0\0\0\0\0' + \
         b'\x13\x37'
         expected = ResStringPool_header(ResChunk_header(
-            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0, 0x100, 0x44,
-            0), b'\x13\x37'
+            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0,
+            ResStringPool_header.Flags.UTF8_FLAG, 0x44, 0), b'\x13\x37'
         actual = ResStringPool_header.from_bytes(invector)
 
         self.assertEqual(expected, actual)
