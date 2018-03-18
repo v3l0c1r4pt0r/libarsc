@@ -3,6 +3,7 @@
 # \brief ResStringPool and related
 import unittest
 from type.uint32 import uint32
+from type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 
@@ -101,6 +102,13 @@ class ResStringPool_header:
         return ResStringPool_header(header, stringCount, styleCount, flags,
                 stringsStart, stylesStart), b
 
+    class Flags(Flag):
+        ## If set, the string index is sorted by the string values (based on strcmp16()).
+        SORTED_FLAG = 0x1
+        ## String pool is encoded in UTF-8
+        UTF8_FLAG = 0x100
+        MAX = 0xffffffff
+
 
 class ResStringPool_headerTests(unittest.TestCase):
 
@@ -151,5 +159,19 @@ class ResStringPool_headerTests(unittest.TestCase):
             ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0, 0x100, 0x44,
             0), b'\x13\x37'
         actual = ResStringPool_header.from_bytes(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_Flag_bytes(self):
+        invector = ResStringPool_header.Flags.UTF8_FLAG
+        expected = b'\0\1\0\0'
+        actual = bytes(reversed(bytes(invector)))
+
+        self.assertEqual(expected, actual)
+
+    def test_Flag_from_bytes(self):
+        invector = b'\0\1\0\0\x13\x37'
+        expected = ResStringPool_header.Flags.UTF8_FLAG, b'\x13\x37'
+        actual = ResStringPool_header.Flags.from_bytes(invector, little=True)
 
         self.assertEqual(expected, actual)
