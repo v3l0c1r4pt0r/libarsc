@@ -9,9 +9,9 @@ all:
 tests: arsc.types.ResourceTypeTests
 tests: arsc.chunk.ResChunk_headerTests
 tests: arsc.table.ResTable_headerTests
-tests: arsc.table.ResTable_package_headerTests
-tests: arsc.table.ResTable_packageTests
-tests: arsc.table.ResTable_configTests
+tests: arsc.package.ResTable_package_headerTests
+tests: arsc.package.ResTable_packageTests
+tests: arsc.config.ResTable_configTests
 tests: arsc.stringpool.ResStringPool_headerTests
 tests: arsc.stringpool.ResStringPoolTests
 tests: type.uint8.uint8Tests
