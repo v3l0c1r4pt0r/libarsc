@@ -69,11 +69,11 @@ class ResTable_header:
         return ResTable_header(header, packageCount), b
 
 
-## \class ResTable_package
+## \class ResTable_package_header
 # \brief A collection of resource data types within a package.
 # \details Followed by one or more ResTable_type and ResTable_typeSpec
 # structures containing the entry values for each resource type.
-class ResTable_package:
+class ResTable_package_header:
 
     MAX_NAME_LEN = 128
     len = 0x120
@@ -82,7 +82,8 @@ class ResTable_package:
             lastPublicType=0, keyStrings=0, lastPublicKey=0):
         if header is None:
             header = ResChunk_header(ResourceType.RES_TABLE_PACKAGE_TYPE,
-                    headerSize=ResTable_package.len, size=ResTable_package.len)
+                    headerSize=ResTable_package_header.len,
+                    size=ResTable_package_header.len)
         if not isinstance(header, ResChunk_header):
             raise WrongTypeException('header', ResChunk_header)
         if header.type is not ResourceType.RES_TABLE_PACKAGE_TYPE:
@@ -103,15 +104,15 @@ class ResTable_package:
 
         if isinstance(name, bytes):
             name_length = len(name)
-            if name_length > ResTable_package.MAX_NAME_LEN * 2:
+            if name_length > ResTable_package_header.MAX_NAME_LEN * 2:
                 raise Exception('name is longer than maximum ({l}>{m})'.format(
-                    l=name_length, m=ResTable_package.MAX_NAME_LEN))
+                    l=name_length, m=ResTable_package_header.MAX_NAME_LEN))
             if name[-2:] != b'\0\0':
                 raise(Exception('name does not end with NULL'))
             ## Actual name of this package
             # \details NULL-terminated, UTF-16 string.
-            self.name = name + bytes((ResTable_package.MAX_NAME_LEN * 2) - \
-                    name_length)
+            self.name = name + bytes((ResTable_package_header.MAX_NAME_LEN * \
+                    2) - name_length)
         else:
             raise Exception('name must be of type bytes')
 
@@ -187,8 +188,20 @@ class ResTable_package:
         keyStrings, b = uint32.from_bytes(b, little=True)
         lastPublicKey, b = uint32.from_bytes(b, little=True)
 
-        return ResTable_package(header, id, name, typeStrings, lastPublicType,
-                keyStrings, lastPublicKey), b[4:]
+        return ResTable_package_header(header, id, name, typeStrings,
+                lastPublicType, keyStrings, lastPublicKey), b[4:]
+
+
+## \class ResTable_package
+#  \brief Describes whole package, together with its content
+#  \details Contains ResTable_package_header as a header, then followed by two
+#  ResStringPool objects and interlaced ResTable_typeSpec and multiple
+#  ResTable_type objects
+class ResTable_package:
+
+    def __init__(self, header=None, typeStrings=None, keyStrings=None,
+            types=None):
+        pass
 
 
 ## \class ResTable_config
@@ -393,11 +406,11 @@ class ResTable_headerTests(unittest.TestCase):
         self.assertNotEqual(invector1, invector2)
 
 
-class ResTable_packageTests(unittest.TestCase):
+class ResTable_package_headerTests(unittest.TestCase):
 
     def test_header_is_invalid(self):
         with self.assertRaises(Exception) as cm:
-            invector = ResTable_package('qwer')
+            invector = ResTable_package_header('qwer')
 
         expected = 'header must be of type ResChunk_header'
         _, actual = cm.exception.args
@@ -406,7 +419,8 @@ class ResTable_packageTests(unittest.TestCase):
 
     def test_header_type_is_invalid(self):
         with self.assertRaises(Exception) as cm:
-            invector = ResTable_package(ResChunk_header(ResourceType.RES_NULL_TYPE))
+            invector = ResTable_package_header(ResChunk_header(
+                ResourceType.RES_NULL_TYPE))
 
         expected = 'header must describe resource of type RES_TABLE_PACKAGE_TYPE'
         _, actual = cm.exception.args
@@ -415,14 +429,14 @@ class ResTable_packageTests(unittest.TestCase):
 
     @unittest.skip('Error on uint32 side')
     def test_id_is_not_uintable(self):
-        invector = ResTable_package(id='123')
+        invector = ResTable_package_header(id='123')
         expected = None
         actual = None
 
         self.assertEqual(expected, actual)
 
     def test_name_is_valid(self):
-        invector = ResTable_package(name=b'q\0w\0e\0r\0\0\0')
+        invector = ResTable_package_header(name=b'q\0w\0e\0r\0\0\0')
         expected = b'q\0w\0e\0r\0\0\0' + bytes(246)
         actual = invector.name
 
@@ -430,7 +444,7 @@ class ResTable_packageTests(unittest.TestCase):
 
     def test_name_is_invalid(self):
         with self.assertRaises(Exception) as cm:
-            invector = ResTable_package(name='qwer\0')
+            invector = ResTable_package_header(name='qwer\0')
 
         expected = 'name must be of type bytes'
         actual, = cm.exception.args
@@ -446,7 +460,7 @@ class ResTable_packageTests(unittest.TestCase):
 
     @unittest.skip('No possibility to store UTF-16 string of fixed len')
     def test_str(self):
-        invector = ResTable_package(header=ResChunk_header(
+        invector = ResTable_package_header(header=ResChunk_header(
             chunkType=ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=0x120,
             size=0x103e4), id=0x7f, name=b't\0e\0s\0t\0\0\0', typeStrings=0x120,
             lastPublicType=10, keyStrings=0x1b4, lastPublicKey=0x319)
@@ -460,11 +474,11 @@ class ResTable_packageTests(unittest.TestCase):
 
     @unittest.skip('No possibility to store UTF-16 string of fixed len')
     def test_repr(self):
-        invector = ResTable_package(header=ResChunk_header(
+        invector = ResTable_package_header(header=ResChunk_header(
             chunkType=ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=0x120,
             size=0x103e4), id=0x7f, name=b't\0e\0s\0t\0\0\0', typeStrings=0x120,
             lastPublicType=10, keyStrings=0x1b4, lastPublicKey=0x319)
-        expected = 'ResTable_package(ResChunk_header(' \
+        expected = 'ResTable_package_header(ResChunk_header(' \
                 'ResourceType.RES_TABLE_PACKAGE_TYPE, 288, 66532), 127, ' \
                 '\'test\', 288, 10, 436, 793)'
         actual = repr(invector)
@@ -472,7 +486,7 @@ class ResTable_packageTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_len(self):
-        invector = ResTable_package(header=ResChunk_header(
+        invector = ResTable_package_header(header=ResChunk_header(
             chunkType=ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=0x120,
             size=0x103e4), id=0x7f, name=b't\0e\0s\0t\0\0\0', typeStrings=0x120,
             lastPublicType=10, keyStrings=0x1b4, lastPublicKey=0x319)
@@ -482,7 +496,7 @@ class ResTable_packageTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_bytes(self):
-        invector = ResTable_package(header=ResChunk_header(
+        invector = ResTable_package_header(header=ResChunk_header(
             chunkType=ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=0x120,
             size=0x103e4), id=0x7f, name=b't\0e\0s\0t\0\0\0', typeStrings=0x120,
             lastPublicType=10, keyStrings=0x1b4, lastPublicKey=0x319)
@@ -496,22 +510,26 @@ class ResTable_packageTests(unittest.TestCase):
         invector = b'\0\2\x20\1\xe4\3\1\0\x7f\0\0\0t\0e\0s\0t\0\0\0' + \
         bytes(246) + b'\x20\1\0\0\x0a\0\0\0\xb4\1\0\0\x19\3\0\0' + \
         b'\0\0\0\0' + b'\x13\x37'
-        expected = ResTable_package(header=ResChunk_header(
+        expected = ResTable_package_header(header=ResChunk_header(
             chunkType=ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=0x120,
             size=0x103e4), id=0x7f, name=b't\0e\0s\0t\0\0\0', typeStrings=0x120,
             lastPublicType=10, keyStrings=0x1b4, lastPublicKey=0x319), \
         b'\x13\x37'
-        actual = ResTable_package.from_bytes(invector)
+        actual = ResTable_package_header.from_bytes(invector)
 
         self.assertEqual(expected, actual)
 
     def test_objects_are_not_same(self):
-        invector1 = ResTable_package()
-        invector2 = ResTable_package()
+        invector1 = ResTable_package_header()
+        invector2 = ResTable_package_header()
         invector1.header.size = uint32(123)
 
         self.assertIsNot(invector1, invector2)
         self.assertNotEqual(invector1, invector2)
+
+
+class ResTable_packageTests(unittest.TestCase):
+    pass
 
 class ResTable_configTests(unittest.TestCase):
 
