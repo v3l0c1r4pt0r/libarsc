@@ -5,8 +5,10 @@ import unittest
 from type.uint32 import uint32
 from type.flag import Flag
 from arsc.chunk import ResChunk_header
+from arsc.table import ResTable_header
 from arsc.types import ResourceType
 from exceptions import WrongTypeException
+from exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResStringPool_header
 #
@@ -165,7 +167,8 @@ class ResStringPool:
     def __init__(self, header=None, strrefs=None, stylerefs=None, strings=None,
             styles=None):
         if header is None:
-            header = ResStringPool_header(ResChunk_header(ResourceType.RES_TABLE_TYPE,
+            header = ResStringPool_header(ResChunk_header(
+                    ResourceType.RES_STRING_POOL_TYPE,
                     headerSize=ResTable_header.len, size=ResTable_header.len),
                     stringCount=0, styleCount=0, flags=0, stringsStart=0,
                     stylesStart=0)

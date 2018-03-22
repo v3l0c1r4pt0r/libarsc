@@ -201,7 +201,85 @@ class ResTable_package:
 
     def __init__(self, header=None, typeStrings=None, keyStrings=None,
             types=None):
-        pass
+        # break circular dependency
+        import arsc.stringpool
+        ResStringPool = arsc.stringpool.ResStringPool
+
+        if header is None:
+            header = ResTable_package_header()
+
+        if typeStrings is None:
+            typeStrings = ResStringPool()
+
+        if keyStrings is None:
+            keyStrings = ResStringPool()
+
+        if not isinstance(header, ResTable_package_header):
+            raise WrongTypeException('header', ResTable_package_header)
+        ## Instance of ResTable_package_header. Stores package name and id.
+        self.header = header
+
+        if not isinstance(typeStrings, ResStringPool):
+            raise WrongTypeException('typeStrings', ResStringPool)
+        ## Instance of ResStringPool. Stores available types.
+        self.typeStrings = typeStrings
+
+        if not isinstance(keyStrings, ResStringPool):
+            raise WrongTypeException('header', ResStringPool)
+        ## Instance of ResStringPool. Stores available types.
+        self.keyStrings = keyStrings
+
+        # TODO: implement
+        self.types = types
+
+    def __str__(self):
+        return '{{header={header}, typeStrings={typeStrings}, '\
+                'keyStrings={keyStrings}, types={types}}}'.format(
+                        header=str(self.header),
+                        typeStrings=str(self.typeStrings),
+                        keyStrings=str(self.keyStrings), types=str(self.types))
+
+    def __repr__(self):
+        return '{c}({header}, {typeStrings}, {keyStrings}, '\
+                '{types})'.format(c=type(self).__name__,
+                header=repr(self.header), typeStrings=repr(self.typeStrings),
+                keyStrings=repr(self.keyStrings), types=repr(self.types))
+
+    def __eq__(self, rhs):
+        return type(self) == type(rhs) and \
+                self.header == rhs.header and \
+                self.typeStrings == rhs.typeStrings and \
+                self.keyStrings == rhs.keyStrings and \
+                self.types == rhs.types
+
+    def __len__(self):
+        return len(bytes(self))
+
+    def __bytes__(self):
+        header = bytes(self.header)
+
+        return header
+
+    def from_bytes(b, little=True):
+        # break circular dependency
+        import arsc.stringpool
+        ResStringPool = arsc.stringpool.ResStringPool
+
+        content = b
+        header, b = ResTable_package_header.from_bytes(b)
+        content_size = header.header.size.integer
+        content, b = content[:content_size], content[content_size:]
+        typeStrings, at = ResStringPool.from_bytes(
+                content[header.typeStrings.integer:])
+        keyStrings, ak = ResStringPool.from_bytes(
+                content[header.keyStrings.integer:])
+        if len(ak) < len(at):
+            rest = ak
+        else:
+            rest = at
+        types = rest # TODO: implement typeSpec and type container
+
+        return ResTable_package(header, typeStrings, keyStrings, types), b
 
 
 ## \class ResTable_config
@@ -529,7 +607,191 @@ class ResTable_package_headerTests(unittest.TestCase):
 
 
 class ResTable_packageTests(unittest.TestCase):
-    pass
+    # break circular dependency
+    import arsc.stringpool
+    ResStringPool = arsc.stringpool.ResStringPool
+    ResStringPool_header = arsc.stringpool.ResStringPool_header
+    Flags = arsc.stringpool.ResStringPool_header.Flags
+
+
+    # ResTable_package_header(name='test')
+    package_header = b'\0\2\x20\1\x08\3\0\0\x7f\0\0\0t\0e\0s\0t\0\0\0' + \
+            bytes(246) + b'\x20\1\0\0\1\0\0\0\xb4\1\0\0\4\0\0\0' + \
+            b'\0\0\0\0'
+
+    # ResStringPool
+    type_strings = \
+            b'\1\0\x1c\0\x94\0\0\0\x0a\0\0\0\0\0\0\0\0\1\0\0\x44\0\0\0' + \
+            b'\0\0\0\0\0\0\0\0\7\0\0\0\x12\0\0\0\x1b\0\0\0\x21\0\0\0' + \
+            b'\x29\0\0\0\x31\0\0\0\x3a\0\0\0\x42\0\0\0\x49\0\0\0\4\4attr\0' + \
+            b'\x08\x08drawable\0\6\6layout\0\3\3raw\0\5\5color\0\5\5dimen\0' + \
+            b'\6\6string\0\5\5style\0\4\4menu\0\2\2id\0' + \
+            b'\0\0'
+
+    # ResStringPool
+    key_strings = \
+            b'\1\0\x1c\0\x4c\0\0\0' + \
+            b'\4\0\0\0\0\0\0\0\0\1\0\0\x2c\0\0\0\0\0\0\0' + \
+            b'\0\0\0\0\x08\0\0\0\x11\0\0\0\x19\0\0\0' + \
+            b'\5\5alarm\0\6\6alarm1\0\5\5arrow\0\4\4back\0'
+
+    typeSpec = b'\2\2\x10\0\x20\0\0\0\7\0\0\0\4\0\0\0' + (b'\4\0\0\0' * 4) #20
+
+    type1 = b'\1\2\x44\0\x74\0\0\0\7\0\0\0\4\0\0\0\x54\0\0\0' + \
+            b'\x30\0\0\0' + bytes(0x2c) + \
+            b'\0\0\0\0\x10\0\0\0\x20\0\0\0\x30\0\0\0' + \
+            b'\x08\0\0\0\0\0\0\0\x08\0\0\0\x08\0\0\0' + \
+            b'\x08\0\0\0\x11\0\0\0\x08\0\0\0\x19\0\0\0'
+
+    type2 = b'\1\2\x44\0\x74\0\0\0\7\0\0\0\4\0\0\0\x54\0\0\0' + \
+            b'\x30\0\0\0\0\0\0\0de' + bytes(0x26) + \
+            b'\0\0\0\0\x10\0\0\0\x20\0\0\0\x30\0\0\0' + \
+            b'\x08\0\0\0\0\0\0\0\x08\0\0\0\x08\0\0\0' + \
+            b'\x08\0\0\0\x11\0\0\0\x08\0\0\0\x19\0\0\0'
+
+    tv1_bytes = package_header + type_strings + key_strings + typeSpec + type1 + \
+            type2 + b'\x13\x37'
+
+    tv1_obj = \
+            ResTable_package(
+                ResTable_package_header(
+                    ResChunk_header(
+                        ResourceType.RES_TABLE_PACKAGE_TYPE, 288, 776
+                    ),
+                    127, b't\x00e\x00s\x00t\x00\x00\x00', 288, 1, 436, 4
+                ),
+                ResStringPool(
+                    ResStringPool_header(
+                        ResChunk_header(
+                            ResourceType.RES_STRING_POOL_TYPE, 28, 148
+                        ),
+                        10, 0, Flags.UTF8_FLAG, 68, 0
+                    ),
+                    [
+                        uint32(0),
+                        uint32(7),
+                        uint32(18),
+                        uint32(27),
+                        uint32(33),
+                        uint32(41),
+                        uint32(49),
+                        uint32(58),
+                        uint32(66),
+                        uint32(73)
+                    ],
+                    [],
+                    [
+                        b'\x04\x04attr\x00',
+                        b'\x08\x08drawable\x00',
+                        b'\x06\x06layout\x00',
+                        b'\x03\x03raw\x00',
+                        b'\x05\x05color\x00',
+                        b'\x05\x05dimen\x00',
+                        b'\x06\x06string\x00',
+                        b'\x05\x05style\x00',
+                        b'\x04\x04menu\x00',
+                        b'\x02\x02id\x00\x00\x00'
+                    ],
+                    []
+                ),
+                ResStringPool(
+                    ResStringPool_header(
+                        ResChunk_header(
+                            ResourceType.RES_STRING_POOL_TYPE, 28, 76
+                        ),
+                        4, 0, Flags.UTF8_FLAG, 44, 0
+                    ),
+                    [
+                        uint32(0),
+                        uint32(8),
+                        uint32(17),
+                        uint32(25)
+                    ],
+                    [],
+                    [
+                        b'\x05\x05alarm\x00',
+                        b'\x06\x06alarm1\x00',
+                        b'\x05\x05arrow\x00',
+                        b'\x04\x04back\x00'
+                    ],
+                    []
+                ),
+                typeSpec + type1 + type2
+            )
+
+    def test_str(self):
+        invector = ResTable_packageTests.tv1_obj
+        expected = "{header={header={type="\
+                "ResourceType.RES_TABLE_PACKAGE_TYPE, headerSize=288, "\
+                "size=776}, id=127, name=b't\\x00e\\x00s\\x00t\\x00\\x00\\x00"+\
+                ("\\x00" * 246)+"', typeStrings=288, lastPublicType=1, "\
+                "keyStrings=436, lastPublicKey=4}, typeStrings={"\
+                "header={header={"\
+                "type=ResourceType.RES_STRING_POOL_TYPE, headerSize=28, "\
+                "size=148}, stringCount=10, styleCount=0, "\
+                "flags=Flags.UTF8_FLAG, stringsStart=68, stylesStart=0}, "\
+                "strrefs=[uint32(0), uint32(7), uint32(18), uint32(27), "\
+                "uint32(33), uint32(41), uint32(49), uint32(58), uint32(66), "\
+                "uint32(73)], stylerefs=[], strings=[b'\\x04\\x04attr\\x00', "\
+                "b'\\x08\\x08drawable\\x00', b'\\x06\\x06layout\\x00', "\
+                "b'\\x03\\x03raw\\x00', b'\\x05\\x05color\\x00', "\
+                "b'\\x05\\x05dimen\\x00', b'\\x06\\x06string\\x00', "\
+                "b'\\x05\\x05style\\x00', b'\\x04\\x04menu\\x00', "\
+                "b'\\x02\\x02id\\x00\\x00\\x00'], styles=[]}, "\
+                "keyStrings={header={header={"\
+                "type=ResourceType.RES_STRING_POOL_TYPE, headerSize=28, "\
+                "size=76}, stringCount=4, styleCount=0, "\
+                "flags=Flags.UTF8_FLAG, stringsStart=44, stylesStart=0}, "\
+                "strrefs=[uint32(0), uint32(8), uint32(17), uint32(25)], "\
+                "stylerefs=[], strings=[b'\\x05\\x05alarm\\x00', "\
+                "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
+                "b'\\x04\\x04back\\x00'], styles=[]}, "\
+                "types=" + \
+                str(ResTable_packageTests.typeSpec +
+                        ResTable_packageTests.type1 +
+                        ResTable_packageTests.type2) + \
+                "}"
+        actual = str(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_repr(self):
+        invector = ResTable_packageTests.tv1_obj
+        expected = "ResTable_package(ResTable_package_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_PACKAGE_TYPE, 288, 776), 127, "\
+                "b't\\x00e\\x00s\\x00t\\x00\\x00\\x00" + ("\\x00" * 246) + \
+                "', 288, 1, 436, 4), ResStringPool(ResStringPool_header("\
+                "ResChunk_header(ResourceType.RES_STRING_POOL_TYPE, 28, 148"\
+                "), 10, 0, Flags.UTF8_FLAG, 68, 0), [uint32(0), uint32(7), "\
+                "uint32(18), uint32(27), uint32(33), uint32(41), uint32(49), "\
+                "uint32(58), uint32(66), uint32(73)], [], ["\
+                "b'\\x04\\x04attr\\x00', b'\\x08\\x08drawable\\x00', "\
+                "b'\\x06\\x06layout\\x00', b'\\x03\\x03raw\\x00', "\
+                "b'\\x05\\x05color\\x00', b'\\x05\\x05dimen\\x00', "\
+                "b'\\x06\\x06string\\x00', b'\\x05\\x05style\\x00', "\
+                "b'\\x04\\x04menu\\x00', b'\\x02\\x02id\\x00\\x00\\x00'], "\
+                "[]), ResStringPool(ResStringPool_header(ResChunk_header("\
+                "ResourceType.RES_STRING_POOL_TYPE, 28, 76), 4, 0, "\
+                "Flags.UTF8_FLAG, 44, 0), [uint32(0), uint32(8), uint32(17), "\
+                "uint32(25)], [], [b'\\x05\\x05alarm\\x00', "\
+                "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
+                "b'\\x04\\x04back\\x00'], []), " + \
+                repr(ResTable_packageTests.typeSpec +
+                        ResTable_packageTests.type1 +
+                        ResTable_packageTests.type2) + \
+                ")"
+        actual = repr(invector)
+
+        self.assertEqual(expected, actual)
+
+    def test_from_bytes(self):
+        self.maxDiff = None
+
+        invector = ResTable_packageTests.tv1_bytes
+        expected = ResTable_packageTests.tv1_obj, b'\x13\x37'
+        actual = ResTable_package.from_bytes(invector)
+
+        self.assertEqual(expected, actual)
 
 class ResTable_configTests(unittest.TestCase):
 
