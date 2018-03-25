@@ -169,7 +169,8 @@ class ResStringPool:
         if header is None:
             header = ResStringPool_header(ResChunk_header(
                     ResourceType.RES_STRING_POOL_TYPE,
-                    headerSize=ResTable_header.len, size=ResTable_header.len),
+                    headerSize=ResStringPool_header.len,
+                    size=ResStringPool_header.len),
                     stringCount=0, styleCount=0, flags=0, stringsStart=0,
                     stylesStart=0)
         if not isinstance(header, ResStringPool_header):
