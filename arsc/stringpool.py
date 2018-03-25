@@ -207,10 +207,17 @@ class ResStringPool:
         if isinstance(strrefs, list) and len(strrefs) > 0 and \
                 not isinstance(strrefs[0], uint32):
             ResStringPool._convert_list_elements(strrefs, uint32)
+        # TODO: create interface in uint* for changing endianness
+        for e in strrefs:
+            e.little = True
+            e._endian = '<'
 
         if isinstance(stylerefs, list) and len(stylerefs) > 0 and \
                 not isinstance(stylerefs[0], uint32):
             ResStringPool._convert_list_elements(stylerefs, uint32)
+        for e in strrefs:
+            e.little = True
+            e._endian = '<'
 
         ## References to strings.
         #  List of \link type.uint32.uint32 \endlink. Offset into self.strings.
@@ -255,7 +262,23 @@ class ResStringPool:
     def __bytes__(self):
         header = bytes(self.header)
 
-        return header
+        # FIXME: determine position and order of strings and styles using header
+        strrefs = bytes()
+        for ref in self.strrefs:
+            strrefs += bytes(ref)
+
+        stylerefs = bytes()
+        for ref in self.stylerefs:
+            stylerefs += bytes(ref)
+
+        strings = bytes()
+        for s in self.strings:
+            strings += bytes(s)
+        styles = bytes()
+        for s in self.styles:
+            styles += bytes(s)
+
+        return header + strrefs + stylerefs + strings + styles
 
     def from_bytes(b, little=True):
         content = b
@@ -392,7 +415,7 @@ class ResStringPoolTests(unittest.TestCase):
             0x1b, 0x21, 0x29, 0x31, 0x3a, 0x42, 0x49], strings=[b'\4\4attr\0',
                 b'\x08\x08drawable\0', b'\6\6layout\0', b'\3\3raw\0',
                 b'\5\5color\0', b'\5\5dimen\0', b'\6\6string\0', b'\5\5style\0',
-                b'\4\4menu\0', b'\2\2id\0'])
+                b'\4\4menu\0', b'\2\2id\0' + b'\0\0'])
 
     def test_str(self):
         invector = ResStringPoolTests.tv1_obj
@@ -407,7 +430,7 @@ class ResStringPoolTests(unittest.TestCase):
                 "b'\\x03\\x03raw\\x00', b'\\x05\\x05color\\x00', " \
                 "b'\\x05\\x05dimen\\x00', b'\\x06\\x06string\\x00', " \
                 "b'\\x05\\x05style\\x00', b'\\x04\\x04menu\\x00', " \
-                "b'\\x02\\x02id\\x00'], styles=[]}"
+                "b'\\x02\\x02id\\x00\\x00\\x00'], styles=[]}"
         actual = str(invector)
 
         self.assertEqual(expected, actual)
@@ -423,7 +446,7 @@ class ResStringPoolTests(unittest.TestCase):
                 "b'\\x06\\x06layout\\x00', b'\\x03\\x03raw\\x00', " \
                 "b'\\x05\\x05color\\x00', b'\\x05\\x05dimen\\x00', " \
                 "b'\\x06\\x06string\\x00', b'\\x05\\x05style\\x00', " \
-                "b'\\x04\\x04menu\\x00', b'\\x02\\x02id\\x00'], " \
+                "b'\\x04\\x04menu\\x00', b'\\x02\\x02id\\x00\\x00\\x00'], " \
                 '[])'
         actual = repr(invector)
 
@@ -437,11 +460,8 @@ class ResStringPoolTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_bytes(self):
-        invector = ResStringPool(ResStringPool_header(ResChunk_header(
-            ResourceType.RES_STRING_POOL_TYPE, 0x1c, 0x94), 10, 0,
-            ResStringPool_header.Flags.UTF8_FLAG, 0x44, 0))
-        expected = b'\1\0\x1c\0\x94\0\0\0' + \
-        b'\x0a\0\0\0\0\0\0\0\0\1\0\0\x44\0\0\0\0\0\0\0'
+        invector = ResStringPoolTests.tv1_obj
+        expected = ResStringPoolTests.tv1_bytes
         actual = bytes(invector)
 
         self.assertEqual(expected, actual)
