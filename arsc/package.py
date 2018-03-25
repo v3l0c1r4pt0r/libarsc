@@ -197,8 +197,12 @@ class ResTable_package:
 
     def __bytes__(self):
         header = bytes(self.header)
+        # FIXME: determine position and order of types and keys using header
+        typeStrings = bytes(self.typeStrings)
+        keyStrings = bytes(self.keyStrings)
+        types = bytes(self.types)
 
-        return header
+        return header + typeStrings + keyStrings + types
 
     def from_bytes(b, little=True):
         content = b
@@ -381,7 +385,7 @@ class ResTable_packageTests(unittest.TestCase):
             b'\x08\0\0\0\x11\0\0\0\x08\0\0\0\x19\0\0\0'
 
     tv1_bytes = package_header + type_strings + key_strings + typeSpec + type1 + \
-            type2 + b'\x13\x37'
+            type2
 
     tv1_obj = \
             ResTable_package(
@@ -515,8 +519,15 @@ class ResTable_packageTests(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_bytes(self):
+        invector = ResTable_packageTests.tv1_obj
+        expected = ResTable_packageTests.tv1_bytes
+        actual = bytes(invector)
+
+        self.assertEqual(expected, actual)
+
     def test_from_bytes(self):
-        invector = ResTable_packageTests.tv1_bytes
+        invector = ResTable_packageTests.tv1_bytes + b'\x13\x37'
         expected = ResTable_packageTests.tv1_obj, b'\x13\x37'
         actual = ResTable_package.from_bytes(invector)
 
