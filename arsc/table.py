@@ -23,7 +23,7 @@ from exceptions import ChunkHeaderWrongTypeException
 # with a single integer as defined by the ResTable_ref structure.
 class ResTable_header:
 
-    len = 0x1c
+    len = 0xc
 
     def __init__(self, header=None, packageCount=0):
         if header is None:
@@ -32,7 +32,8 @@ class ResTable_header:
         if not isinstance(header, ResChunk_header):
             raise WrongTypeException('header', ResChunk_header)
         if header.type is not ResourceType.RES_TABLE_TYPE:
-            raise ChunkHeaderWrongTypeException(ResourceType.RES_TABLE_TYPE)
+            raise ChunkHeaderWrongTypeException(ResourceType.RES_TABLE_TYPE,
+                    header.type)
         self.header = header
 
         if isinstance(packageCount, uint32):

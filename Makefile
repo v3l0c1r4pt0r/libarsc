@@ -6,6 +6,7 @@ all:
 	@echo -e "\t\e[1mRUN TESTS FOR $@\e[0m"
 	python3 -m unittest $@
 
+tests: arsc.arsc.ResTableTests
 tests: arsc.types.ResourceTypeTests
 tests: arsc.chunk.ResChunk_headerTests
 tests: arsc.table.ResTable_headerTests

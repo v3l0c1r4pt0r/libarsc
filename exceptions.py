@@ -9,6 +9,8 @@ class WrongTypeException(Exception):
 
 class ChunkHeaderWrongTypeException(Exception):
 
-    def __init__(self, chunkType):
+    def __init__(self, expectedType, chunkType=None):
         super().__init__(self, 'header must describe resource of type ' \
-                '{}'.format(chunkType.name))
+                '{expects}{got}'.format(expects=expectedType.name,
+                    got=' (got {})'.format(chunkType.name) if \
+                    chunkType else ''))
