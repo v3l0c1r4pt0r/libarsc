@@ -66,7 +66,10 @@ class ResTable:
                 packages=repr(self.packages))
 
     def __eq__(self, rhs):
-        return type(self) == type(rhs) and self.header == rhs.header
+        return type(self) == type(rhs) and \
+                self.header == rhs.header and \
+                self.values == rhs.values and \
+                self.packages == rhs.packages
 
     def __len__(self):
         return len(bytes(self))
@@ -88,7 +91,7 @@ class ResTable:
             pkg, b = ResTable_package.from_bytes(b)
             packages.append(pkg)
 
-        return ResTable(header, values), b
+        return ResTable(header, values, packages), b
 
 
 class ResTableTests(unittest.TestCase):
