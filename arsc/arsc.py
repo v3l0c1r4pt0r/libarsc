@@ -101,7 +101,7 @@ class ResTableTests(unittest.TestCase):
     # ResStringPool
     value_strings = \
             b'\1\0\x1c\0\x1c\0\0\0' + \
-            b'\0\0\0\0\0\0\0\0\0\1\0\0\x2c\0\0\0\0\0\0\0'
+            b'\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'
 
     # ResTable_package_header(name='test')
     package_header = b'\0\2\x20\1\x08\3\0\0\x7f\0\0\0t\0e\0s\0t\0\0\0' + \
@@ -139,7 +139,7 @@ class ResTableTests(unittest.TestCase):
             b'\x08\0\0\0\x11\0\0\0\x08\0\0\0\x19\0\0\0'
 
     tv1_bytes = table_header + value_strings + package_header + type_strings + \
-    key_strings + typeSpec + type1 + type2 + b'\x13\x37'
+    key_strings + typeSpec + type1 + type2
 
     tv1_obj = \
             ResTable(
@@ -225,7 +225,7 @@ class ResTableTests(unittest.TestCase):
         expected = '{header={header={type=ResourceType.RES_TABLE_TYPE, ' \
                 'headerSize=12, size=818}, packageCount=1}, values={header={'\
                 "header={type=ResourceType.RES_STRING_POOL_TYPE, "\
-                "headerSize=12, size=12}, stringCount=0, styleCount=0, "\
+                "headerSize=28, size=28}, stringCount=0, styleCount=0, "\
                 "flags=Flags.0, stringsStart=0, stylesStart=0}, strrefs=[], "\
                 "stylerefs=[], strings=[], styles=[]}, packages=["\
                 "{header={header={type="\
@@ -267,7 +267,7 @@ class ResTableTests(unittest.TestCase):
         expected = 'ResTable(ResTable_header(ResChunk_header('\
                 'ResourceType.RES_TABLE_TYPE, 12, 818), 1), ResStringPool('\
                 'ResStringPool_header(ResChunk_header('\
-                'ResourceType.RES_STRING_POOL_TYPE, 12, 12), 0, 0, Flags.0, '\
+                'ResourceType.RES_STRING_POOL_TYPE, 28, 28), 0, 0, Flags.0, '\
                 '0, 0), [], [], [], []), ['\
                 'ResTable_package(ResTable_package_header(ResChunk_header('\
                 'ResourceType.RES_TABLE_PACKAGE_TYPE, 288, 776), 127, '\
@@ -296,7 +296,7 @@ class ResTableTests(unittest.TestCase):
 
     def test_len(self):
         invector = ResTableTests.tv1_obj
-        expected = 818
+        expected = 816
         actual = len(invector)
 
         self.assertEqual(expected, actual)
@@ -309,7 +309,7 @@ class ResTableTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_from_bytes(self):
-        invector = ResTableTests.tv1_bytes
+        invector = ResTableTests.tv1_bytes + b'\x13\x37'
         expected = ResTableTests.tv1_obj, b'\x13\x37'
         actual = ResTable.from_bytes(invector)
 
