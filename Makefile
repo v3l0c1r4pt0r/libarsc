@@ -15,6 +15,7 @@ tests: arsc.package.ResTable_packageTests
 tests: arsc.config.ResTable_configTests
 tests: arsc.stringpool.ResStringPool_headerTests
 tests: arsc.stringpool.ResStringPoolTests
+tests: arsc.type.ResTable_typeSpec_headerTests
 tests: type.uint8.uint8Tests
 tests: type.uint16.uint16Tests
 tests: type.uint32.uint32Tests
