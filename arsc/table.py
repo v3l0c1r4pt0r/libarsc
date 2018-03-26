@@ -92,7 +92,8 @@ class ResTable_headerTests(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             invector = ResTable_header(ResChunk_header())
 
-        expected = 'header must describe resource of type RES_TABLE_TYPE'
+        expected = 'header must describe resource of type '\
+                'ResourceType.RES_TABLE_TYPE'
         _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)

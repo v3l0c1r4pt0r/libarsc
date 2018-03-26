@@ -17,16 +17,30 @@ class ResTable_config:
     def __init__(self, size=0x30, imsi=None, locale=None, screenType=None,
             input=None, screenSize=None, version=None, screenConfig=None,
             screenSizeDp=None):
+        notimpl = None
         if isinstance(size, uint32):
             ## Number of bytes in this structure
             self.size = size
+        elif isinstance(size, bytes):
+            # TODO: remove after full implementation
+            self.size, notimpl = uint32.from_bytes(size, little=True)
         else:
             self.size = uint32(size, little=True)
 
-        self.notimpl = bytes(self.size.integer - 4)
+        if notimpl is None:
+            notimpl = bytes(self.size.integer - 4)
+        self.notimpl = notimpl
 
     def __eq__(self, rhs):
         return type(self) == type(rhs) and self.size == rhs.size
+
+    def __str__(self):
+        # TODO: implement
+        return '{size}'.\
+                format(size=bytes(self.size)+self.notimpl)
+
+    def __repr__(self):
+        return '{size}'.format(size=bytes(self.size)+self.notimpl)
 
     def __bytes__(self):
         size = bytes(self.size)

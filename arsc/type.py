@@ -197,7 +197,7 @@ class ResTable_type_header:
             entriesStart = uint32(entriesStart, little=True)
 
         if not isinstance(config, ResTable_config):
-            config = ResTable_config(config, little=True)
+            config = ResTable_config(config)
 
         self.header = header
         ## The type identifier this chunk is holding.  Type IDs start

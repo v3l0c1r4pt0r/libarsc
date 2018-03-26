@@ -7,6 +7,10 @@ from type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.stringpool import ResStringPool
 from arsc.stringpool import ResStringPool_header
+from arsc.type import ResTable_typeSpec
+from arsc.type import ResTable_typeSpec_header
+from arsc.type import ResTable_type
+from arsc.type import ResTable_type_header
 from arsc.types import ResourceType
 from arsc.external.configuration import AConfiguration
 from exceptions import WrongTypeException
@@ -200,7 +204,10 @@ class ResTable_package:
         # FIXME: determine position and order of types and keys using header
         typeStrings = bytes(self.typeStrings)
         keyStrings = bytes(self.keyStrings)
-        types = bytes(self.types)
+        types = bytes()
+        for spec in self.types:
+            for obj in spec:
+                types += bytes(obj)
 
         return header + typeStrings + keyStrings + types
 
@@ -217,9 +224,33 @@ class ResTable_package:
             rest = ak
         else:
             rest = at
-        types = rest # TODO: implement typeSpec and type container
 
-        return ResTable_package(header, typeStrings, keyStrings, types), b
+        types = []
+        spec = None
+        ret_b = b
+        b = rest
+
+        # Deserialize typeSpec and type till end of package. Final structure
+        # would be list of lists, where inner list always starts with typeSpec
+        # and contains all related type structures
+        while len(b) > 0:
+            hdr, _ = ResChunk_header.from_bytes(b)
+            if hdr.type == ResourceType.RES_TABLE_TYPE_SPEC_TYPE:
+                if spec is not None:
+                    types.append(spec)
+                spec = []
+                typeSpec, b = ResTable_typeSpec.from_bytes(b)
+                spec.append(typeSpec)
+            elif hdr.type == ResourceType.RES_TABLE_TYPE_TYPE:
+                typ, b = ResTable_type.from_bytes(b)
+                spec.append(typ)
+            else:
+                raise ChunkHeaderWrongTypeException([
+                    ResourceType.RES_TABLE_TYPE_SPEC_TYPE,
+                    ResourceType.RES_TABLE_TYPE_TYPE], hdr.type)
+        types.append(spec)
+
+        return ResTable_package(header, typeStrings, keyStrings, types), ret_b
 
 
 class ResTable_package_headerTests(unittest.TestCase):
@@ -238,7 +269,8 @@ class ResTable_package_headerTests(unittest.TestCase):
             invector = ResTable_package_header(ResChunk_header(
                 ResourceType.RES_NULL_TYPE))
 
-        expected = 'header must describe resource of type RES_TABLE_PACKAGE_TYPE'
+        expected = 'header must describe resource of type '\
+                'ResourceType.RES_TABLE_PACKAGE_TYPE'
         _, actual = cm.exception.args
 
         self.assertEqual(expected, actual)
@@ -451,7 +483,50 @@ class ResTable_packageTests(unittest.TestCase):
                     ],
                     []
                 ),
-                typeSpec + type1 + type2
+                [
+                    [
+                        ResTable_typeSpec(
+                            ResTable_typeSpec_header(
+                                ResChunk_header(
+                                    ResourceType.RES_TABLE_TYPE_SPEC_TYPE,
+                                    16, 32
+                                ),
+                                7, 0, 0, 4
+                            ), 
+                            (b'\x04\x00\x00\x00' * 4)
+                        ),
+                        ResTable_type(
+                            ResTable_type_header(
+                                ResChunk_header(
+                                    ResourceType.RES_TABLE_TYPE_TYPE, 68, 116
+                                ),
+                                7, 0, 0, 4, 84,
+                                b'0' + bytes(0x2f)
+                            ),
+                            b'\x00\x00\x00\x00\x10\x00\x00\x00'\
+                                    b' \x00\x00\x000\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x00\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x08\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x11\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x19\x00\x00\x00'
+                        ),
+                        ResTable_type(
+                            ResTable_type_header(
+                                ResChunk_header(
+                                    ResourceType.RES_TABLE_TYPE_TYPE, 68, 116
+                                ),
+                                7, 0, 0, 4, 84,
+                                b'0\x00\x00\x00\x00\x00\x00\x00de'+bytes(0x26)
+                            ),
+                            b'\x00\x00\x00\x00\x10\x00\x00\x00'\
+                                    b' \x00\x00\x000\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x00\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x08\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x11\x00\x00\x00'\
+                                    b'\x08\x00\x00\x00\x19\x00\x00\x00'
+                        )
+                    ]
+                ]
             )
 
     def test_str(self):
@@ -481,11 +556,30 @@ class ResTable_packageTests(unittest.TestCase):
                 "stylerefs=[], strings=[b'\\x05\\x05alarm\\x00', "\
                 "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
                 "b'\\x04\\x04back\\x00'], styles=[]}, "\
-                "types=" + \
-                str(ResTable_packageTests.typeSpec +
-                        ResTable_packageTests.type1 +
-                        ResTable_packageTests.type2) + \
-                "}"
+                "types=[[ResTable_typeSpec(ResTable_typeSpec_header("\
+                "ResChunk_header(ResourceType.RES_TABLE_TYPE_SPEC_TYPE, 16, "\
+                "32), 7, 0, 0, 4), b'\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00"\
+                "\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00'), ResTable_type("\
+                "ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"\
+                "), b'\\x00\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x00"\
+                "0\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00'), "\
+                "ResTable_type(ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00de\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'), b'\\x00"\
+                "\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x000\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00')]]}"
         actual = str(invector)
 
         self.assertEqual(expected, actual)
@@ -510,11 +604,31 @@ class ResTable_packageTests(unittest.TestCase):
                 "Flags.UTF8_FLAG, 44, 0), [uint32(0), uint32(8), uint32(17), "\
                 "uint32(25)], [], [b'\\x05\\x05alarm\\x00', "\
                 "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
-                "b'\\x04\\x04back\\x00'], []), " + \
-                repr(ResTable_packageTests.typeSpec +
-                        ResTable_packageTests.type1 +
-                        ResTable_packageTests.type2) + \
-                ")"
+                "b'\\x04\\x04back\\x00'], []), [[ResTable_typeSpec("\
+                "ResTable_typeSpec_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_SPEC_TYPE, 16, 32), 7, 0, 0, 4), "\
+                "b'\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00\\x04\\x00\\x00"\
+                "\\x00\\x04\\x00\\x00\\x00'), ResTable_type("\
+                "ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"\
+                "), b'\\x00\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x00"\
+                "0\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00'), "\
+                "ResTable_type(ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00de\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'), b'\\x00"\
+                "\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x000\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00')]])"
         actual = repr(invector)
 
         self.assertEqual(expected, actual)

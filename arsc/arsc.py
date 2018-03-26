@@ -10,6 +10,10 @@ from arsc.package import ResTable_package
 from arsc.package import ResTable_package_header
 from arsc.stringpool import ResStringPool
 from arsc.stringpool import ResStringPool_header
+from arsc.type import ResTable_typeSpec
+from arsc.type import ResTable_typeSpec_header
+from arsc.type import ResTable_type
+from arsc.type import ResTable_type_header
 from exceptions import WrongTypeException
 from exceptions import ChunkHeaderWrongTypeException
 
@@ -217,7 +221,65 @@ class ResTableTests(unittest.TestCase):
                             ],
                             []
                         ),
-                        typeSpec + type1 + type2
+                        [
+                            [
+                                ResTable_typeSpec(
+                                    ResTable_typeSpec_header(
+                                        ResChunk_header(
+                                            ResourceType.RES_TABLE_TYPE_SPEC_TYPE,
+                                            16, 32
+                                        ),
+                                        7, 0, 0, 4
+                                    ),
+                                    b'\x04\x00\x00\x00\x04\x00\x00\x00'\
+                                            b'\x04\x00\x00\x00\x04\x00\x00\x00'
+                                ),
+                                ResTable_type(
+                                    ResTable_type_header(
+                                        ResChunk_header(
+                                            ResourceType.RES_TABLE_TYPE_TYPE,
+                                            68, 116
+                                        ),
+                                        7, 0, 0, 4, 84,
+                                        b'0\x00\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00'
+                                    ),
+                                    b'\x00\x00\x00\x00\x10\x00\x00\x00 \x00'\
+                                            b'\x00\x000\x00\x00\x00\x08\x00'\
+                                            b'\x00\x00\x00\x00\x00\x00\x08\x00'\
+                                            b'\x00\x00\x08\x00\x00\x00\x08\x00'\
+                                            b'\x00\x00\x11\x00\x00\x00\x08\x00'\
+                                            b'\x00\x00\x19\x00\x00\x00'
+                                ),
+                                ResTable_type(
+                                    ResTable_type_header(
+                                        ResChunk_header(
+                                            ResourceType.RES_TABLE_TYPE_TYPE,
+                                            68, 116
+                                        ),
+                                        7, 0, 0, 4, 84,
+                                        b'0\x00\x00\x00\x00\x00\x00\x00de\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00\x00\x00\x00\x00\x00'\
+                                                b'\x00\x00'
+                                    ),
+                                    b'\x00\x00\x00\x00\x10\x00\x00\x00 \x00'\
+                                            b'\x00\x000\x00\x00\x00\x08\x00\x00'\
+                                            b'\x00\x00\x00\x00\x00\x08\x00\x00'\
+                                            b'\x00\x08\x00\x00\x00\x08\x00\x00'\
+                                            b'\x00\x11\x00\x00\x00\x08\x00\x00'\
+                                            b'\x00\x19\x00\x00\x00'
+                                )
+                            ]
+                        ]
                     )
                 ]
             )
@@ -256,11 +318,30 @@ class ResTableTests(unittest.TestCase):
                 "stylerefs=[], strings=[b'\\x05\\x05alarm\\x00', "\
                 "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
                 "b'\\x04\\x04back\\x00'], styles=[]}, "\
-                "types=" + \
-                str(ResTableTests.typeSpec +
-                        ResTableTests.type1 +
-                        ResTableTests.type2) + \
-                "}]}"
+                "types=[[ResTable_typeSpec(ResTable_typeSpec_header("\
+                "ResChunk_header(ResourceType.RES_TABLE_TYPE_SPEC_TYPE, 16, 32"\
+                "), 7, 0, 0, 4), b'\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00"\
+                "\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00'), ResTable_type("\
+                "ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"\
+                "), b'\\x00\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x00"\
+                "0\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00'), "\
+                "ResTable_type(ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00de\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'), b'\\x00"\
+                "\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x000\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00')]]}]}"
         actual = str(invector)
 
         self.assertEqual(expected, actual)
@@ -290,9 +371,31 @@ class ResTableTests(unittest.TestCase):
                 "Flags.UTF8_FLAG, 44, 0), [uint32(0), uint32(8), uint32(17), "\
                 "uint32(25)], [], [b'\\x05\\x05alarm\\x00', "\
                 "b'\\x06\\x06alarm1\\x00', b'\\x05\\x05arrow\\x00', "\
-                "b'\\x04\\x04back\\x00'], []), "+\
-                repr(ResTableTests.typeSpec + ResTableTests.type1 + \
-                        ResTableTests.type2)+")])"
+                "b'\\x04\\x04back\\x00'], []), [[ResTable_typeSpec("\
+                "ResTable_typeSpec_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_SPEC_TYPE, 16, 32), 7, 0, 0, 4), "\
+                "b'\\x04\\x00\\x00\\x00\\x04\\x00\\x00\\x00\\x04\\x00\\x00"\
+                "\\x00\\x04\\x00\\x00\\x00'), ResTable_type("\
+                "ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"\
+                "), b'\\x00\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x00"\
+                "0\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11"\
+                "\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00'), "\
+                "ResTable_type(ResTable_type_header(ResChunk_header("\
+                "ResourceType.RES_TABLE_TYPE_TYPE, 68, 116), 7, 0, 0, 4, 84, "\
+                "b'0\\x00\\x00\\x00\\x00\\x00\\x00\\x00de\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"\
+                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'), b'\\x00"\
+                "\\x00\\x00\\x00\\x10\\x00\\x00\\x00 \\x00\\x00\\x000\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x08\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x08\\x00\\x00\\x00\\x11\\x00"\
+                "\\x00\\x00\\x08\\x00\\x00\\x00\\x19\\x00\\x00\\x00')]])])"
         actual = repr(invector)
 
         self.assertEqual(expected, actual)
