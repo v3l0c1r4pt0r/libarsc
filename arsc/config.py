@@ -2,8 +2,8 @@
 ## \file config.py
 # \brief ResTable_config and related
 import unittest
-from type.uint32 import uint32
-from type.flag import Flag
+from arsc.type.uint32 import uint32
+from arsc.type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 from arsc.external.configuration import AConfiguration

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ## \file configuration.py
 # Android configuration bits
-from type.enum import Enum
+from arsc.type.enum import Enum
 
 ## \enum AConfiguration
 class AConfiguration(Enum):

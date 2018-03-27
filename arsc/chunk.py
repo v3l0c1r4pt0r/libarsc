@@ -2,8 +2,8 @@
 ## \file chunk.py
 # \brief ResChunk and related
 import unittest
-from type.uint16 import uint16
-from type.uint32 import uint32
+from arsc.type.uint16 import uint16
+from arsc.type.uint32 import uint32
 from arsc.types import ResourceType
 
 ## \class ResChunk_header

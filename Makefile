@@ -15,14 +15,14 @@ tests: arsc.package.ResTable_packageTests
 tests: arsc.config.ResTable_configTests
 tests: arsc.stringpool.ResStringPool_headerTests
 tests: arsc.stringpool.ResStringPoolTests
-tests: arsc.type.ResTable_typeSpec_headerTests
-tests: arsc.type.ResTable_typeSpecTests
-tests: arsc.type.ResTable_type_headerTests
-tests: arsc.type.ResTable_typeTests
-tests: type.uint8.uint8Tests
-tests: type.uint16.uint16Tests
-tests: type.uint32.uint32Tests
-tests: type.uint64.uint64Tests
+tests: arsc.tabletype.ResTable_typeSpec_headerTests
+tests: arsc.tabletype.ResTable_typeSpecTests
+tests: arsc.tabletype.ResTable_type_headerTests
+tests: arsc.tabletype.ResTable_typeTests
+tests: arsc.type.uint8.uint8Tests
+tests: arsc.type.uint16.uint16Tests
+tests: arsc.type.uint32.uint32Tests
+tests: arsc.type.uint64.uint64Tests
 
 doc:
 	doxygen

@@ -2,7 +2,7 @@
 ## \file arsc.py
 # \brief Main resource table functionality
 import unittest
-from type.uint32 import uint32
+from arsc.type.uint32 import uint32
 from arsc.chunk import ResChunk_header
 from arsc.table import ResTable_header
 from arsc.types import ResourceType
@@ -10,10 +10,10 @@ from arsc.package import ResTable_package
 from arsc.package import ResTable_package_header
 from arsc.stringpool import ResStringPool
 from arsc.stringpool import ResStringPool_header
-from arsc.type import ResTable_typeSpec
-from arsc.type import ResTable_typeSpec_header
-from arsc.type import ResTable_type
-from arsc.type import ResTable_type_header
+from arsc.tabletype import ResTable_typeSpec
+from arsc.tabletype import ResTable_typeSpec_header
+from arsc.tabletype import ResTable_type
+from arsc.tabletype import ResTable_type_header
 from exceptions import WrongTypeException
 from exceptions import ChunkHeaderWrongTypeException
 

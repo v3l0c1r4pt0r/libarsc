@@ -2,9 +2,9 @@
 ## \file type.py
 # \brief ResTable_typeSpec and ResTable_type
 import unittest
-from type.uint8 import uint8
-from type.uint16 import uint16
-from type.uint32 import uint32
+from arsc.type.uint8 import uint8
+from arsc.type.uint16 import uint16
+from arsc.type.uint32 import uint32
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 from arsc.config import ResTable_config

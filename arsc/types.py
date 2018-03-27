@@ -2,7 +2,7 @@
 ## \file types.py
 # \brief resource types in ARSC file
 import unittest
-from type.enum import Enum
+from arsc.type.enum import Enum
 
 class ResourceType(Enum):
     RES_NULL_TYPE = 0x0000

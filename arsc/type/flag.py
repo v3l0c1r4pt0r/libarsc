@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-## \file enum.py
-#  \brief enumeration type
+## \file flag.py
+#  \brief flag type
 import struct
 import sys
-from enum import IntEnum
-from type.align import align
+from enum import IntFlag
+from arsc.type.align import align
 
-"""Serializable enum object
+"""Serializable flag object
 
 Always serializes/deserializes to/from big endian integers"""
-class Enum(IntEnum):
+class Flag(IntFlag):
 
     def _field_width(floor, ceiling):
         diff = ceiling - floor
@@ -48,8 +48,8 @@ class Enum(IntEnum):
 
     def __bytes__(self):
         max_val = type(self)._max_value()
-        field_width = Enum._field_width(0, max_val)
-        b = Enum._value_as_bytes(int(self))
+        field_width = Flag._field_width(0, max_val)
+        b = Flag._value_as_bytes(int(self))
         # if last set byte is less than width of the field, align
         b = align(b, field_width)
         if sys.byteorder == 'little':
@@ -62,7 +62,7 @@ class Enum(IntEnum):
     @classmethod
     def from_bytes(cls, b, little=False):
         max_val = cls._max_value()
-        fw = Enum._field_width(0, max_val)
+        fw = Flag._field_width(0, max_val)
         this, b = (b[:fw], b[fw:])
         if sys.byteorder == 'little':
             this = bytes(reversed(this))
