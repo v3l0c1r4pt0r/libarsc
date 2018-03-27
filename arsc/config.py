@@ -7,8 +7,8 @@ from arsc.type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 from arsc.external.configuration import AConfiguration
-from exceptions import WrongTypeException
-from exceptions import ChunkHeaderWrongTypeException
+from arsc.exceptions import WrongTypeException
+from arsc.exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResTable_config
 #\brief Describes current ResTable_type configuration

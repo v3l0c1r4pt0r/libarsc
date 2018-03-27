@@ -8,8 +8,8 @@ from arsc.type.uint32 import uint32
 from arsc.chunk import ResChunk_header
 from arsc.types import ResourceType
 from arsc.config import ResTable_config
-from exceptions import WrongTypeException
-from exceptions import ChunkHeaderWrongTypeException
+from arsc.exceptions import WrongTypeException
+from arsc.exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResTable_typeSpec_header
 #  \brief A specification of the resources defined by a particular type.

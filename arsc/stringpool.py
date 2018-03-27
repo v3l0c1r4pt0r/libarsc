@@ -7,8 +7,8 @@ from arsc.type.flag import Flag
 from arsc.chunk import ResChunk_header
 from arsc.table import ResTable_header
 from arsc.types import ResourceType
-from exceptions import WrongTypeException
-from exceptions import ChunkHeaderWrongTypeException
+from arsc.exceptions import WrongTypeException
+from arsc.exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResStringPool_header
 #

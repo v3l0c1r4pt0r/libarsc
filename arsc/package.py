@@ -13,8 +13,8 @@ from arsc.tabletype import ResTable_type
 from arsc.tabletype import ResTable_type_header
 from arsc.types import ResourceType
 from arsc.external.configuration import AConfiguration
-from exceptions import WrongTypeException
-from exceptions import ChunkHeaderWrongTypeException
+from arsc.exceptions import WrongTypeException
+from arsc.exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResTable_package_header
 # \brief A collection of resource data types within a package.

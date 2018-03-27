@@ -14,8 +14,8 @@ from arsc.tabletype import ResTable_typeSpec
 from arsc.tabletype import ResTable_typeSpec_header
 from arsc.tabletype import ResTable_type
 from arsc.tabletype import ResTable_type_header
-from exceptions import WrongTypeException
-from exceptions import ChunkHeaderWrongTypeException
+from arsc.exceptions import WrongTypeException
+from arsc.exceptions import ChunkHeaderWrongTypeException
 
 ## \class ResTable
 class ResTable:
